@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Microstock Metadata Generator</title>
+</head>
+<body>
+
+<h2>Microstock Metadata Generator</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    <input type="file" name="files" multiple required>
+    <br><br>
+    <button type="submit">Generate CSV</button>
+</form>
+
+{% if message %}
+<p style="color:green;"><b>{{ message }}</b></p>
+{% endif %}
+
+</body>
+</html>
