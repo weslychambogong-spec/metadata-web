@@ -1,29 +1,45 @@
-from flask import Flask, render_template, request
-import os
+from flask import Flask, render_template, request, send_file
+import csv, os, io
 
 app = Flask(__name__)
-
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
-@app.route("/upload", methods=["POST"])
-def upload():
+@app.route("/generate", methods=["POST"])
+def generate():
     files = request.files.getlist("files")
-    saved_files = []
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # CSV header (industry standard)
+    writer.writerow(["filename", "title", "keywords", "category"])
 
     for file in files:
-        if file.filename != "":
-            path = os.path.join(UPLOAD_FOLDER, file.filename)
-            file.save(path)
-            saved_files.append(file.filename)
+        name = os.path.splitext(file.filename)[0]
 
-    return f"Uploaded successfully: {', '.join(saved_files)}"
+        title = f"Minimal outline vector icon of {name.replace('-', ' ')}"
+        keywords = (
+            f"{name}, vector icon, outline icon, minimal icon, line icon, "
+            "eco icon, sustainability, environment, green energy, climate, "
+            "recycling, nature, ecology, clean design, editable stroke, "
+            "isolated icon, web icon, app icon, ui ux, infographic, "
+            "flat design, symbol, pictogram, illustration, eps, svg"
+        )
+        category = "Nature"
+
+        writer.writerow([file.filename, title, keywords, category])
+
+    output.seek(0)
+
+    return send_file(
+        io.BytesIO(output.getvalue().encode()),
+        mimetype="text/csv",
+        as_attachment=True,
+        download_name="metadata.csv"
+    )
 
 if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run()
